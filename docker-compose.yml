@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - ${DB_PORT}:5432 #useful only when trying to connect to db outside from docker
+    volumes:           
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    restart: always
+    environment:
+      DB_HOST: ${DOCKER_DB_HOST}
+      DB_PORT: ${DOCKER_DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      APISERVER_HOST: ${APISERVER_HOST}
+      APISERVER_PORT: ${APISERVER_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - ${APISERVER_PORT}:${APISERVER_PORT}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+  web: 
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    restart: always
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+volumes:
+  db_data:
+
+# example:
+# 1. http://localhost:8080/auth/signup
+# 2. host:8080 -> api-container:8080
+# 3. signupHandler: query -> db:5432
+# 4. api-container (having conn string with db:5432) -> db:5432 (inside docker, api container interacts with db container)

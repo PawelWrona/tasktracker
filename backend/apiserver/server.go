@@ -1,0 +1,67 @@
+package apiserver
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"tasktracker/config"
+	"tasktracker/store"
+	"time"
+)
+
+type ApiServer struct {
+	config       *config.Config
+	store        *store.Store
+	tokenManager *tokenManager
+}
+
+func New(config *config.Config, store *store.Store, tokenManager *tokenManager) *ApiServer {
+	return &ApiServer{
+		config:       config,
+		store:        store,
+		tokenManager: tokenManager,
+	}
+}
+
+func (s *ApiServer) Start(ctx context.Context) error {
+	mux := http.NewServeMux()
+
+	// mux.HandleFunc("POST /auth/signin", s.SignInHandler)
+	mux.Handle("POST /auth/signin", http.HandlerFunc(s.SignInHandler))
+	mux.Handle("POST /auth/signup", http.HandlerFunc(s.SignUpHandler))
+	mux.Handle("POST /auth/signout", http.HandlerFunc(s.SignOutHandler))
+	mux.Handle("POST /auth/refresh", http.HandlerFunc(s.TokenRefreshHandler))
+
+	mux.Handle("POST /tasks", s.AuthMiddleware(http.HandlerFunc(s.CreateTaskHandler)))
+	mux.Handle("GET /tasks", s.AuthMiddleware(http.HandlerFunc(s.ListTasksHandler)))
+	mux.Handle("GET /tasks/assigned-to-me", s.AuthMiddleware(http.HandlerFunc(s.ListUserTasksHandler)))
+	mux.Handle("PATCH /tasks/{task_id}", s.AuthMiddleware(http.HandlerFunc(s.UpdateTaskHandler)))
+
+	mux.Handle("GET /users", s.AuthMiddleware(http.HandlerFunc(s.ListUsersHandler)))
+	mux.Handle("PATCH /users/me/change-password", s.AuthMiddleware(http.HandlerFunc(s.ChangePasswordHandler)))
+
+	server := &http.Server{
+		Addr:    net.JoinHostPort(s.config.ApiServerHost, s.config.ApiServerPort),
+		Handler: mux,
+	}
+
+	go func() {
+		log.Printf("listening on %s\n", server.Addr)
+
+		if err := server.ListenAndServe(); err != nil {
+			fmt.Fprintf(os.Stderr, "error listening and serving: %s", err)
+		}
+	}()
+
+	<-ctx.Done()
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "error shutting down the server: %s", err)
+	}
+
+	return nil
+}
