@@ -81,3 +81,50 @@ export async function getUsers(): Promise<User[]> {
 
     return responseData.users
 }
+
+type changePasswordRequest = {
+    current_password: string,
+    new_password: string
+}
+
+export async function changePassword(request: changePasswordRequest): Promise<void> {
+    const response = await authenticatedFetch("/api/users/me/change-password", { 
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request)
+    })
+
+    if (!response.ok) {
+        let errData: unknown
+
+        try {
+            errData = await response.json()
+        } catch {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        if (!isErrorResponse(errData)) {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        throw new ApiError(
+            response.status,
+            errData.message,
+            errData.errors
+        )
+    }
+
+    if (response.status !== 204) {
+        throw new ApiError(
+            response.status,
+            "Unexpected response from the server"
+        )
+    }
+}

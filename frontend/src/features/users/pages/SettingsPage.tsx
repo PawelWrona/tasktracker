@@ -1,28 +1,16 @@
-
 import {
     UserRound,
-    LockKeyhole,
     Palette,
-    Link2,
     Sun,
     Moon,
-    Monitor
+    Monitor,
+    LockKeyhole
 } from "lucide-react"
+import ChangePasswordForm from "../components/ChangePasswordForm"
 
 export default function SettingsPage() {
     const cardClass =
         "rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-
-    const inputClass = `
-        w-full rounded-lg border border-gray-300
-        bg-white px-3 py-2.5 text-sm text-gray-800
-        outline-none transition-colors
-        placeholder:text-gray-400
-        focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-    `
-
-    const labelClass =
-        "mb-1.5 block text-sm font-medium text-gray-700"
 
     const secondaryButtonClass = `
         cursor-pointer rounded-lg border border-gray-300
@@ -88,67 +76,7 @@ export default function SettingsPage() {
                             Security
                         </h2>
                     </div>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label
-                                htmlFor="current-password"
-                                className={labelClass}
-                            >
-                                Current password
-                            </label>
-                            <input
-                                id="current-password"
-                                type="password"
-                                autoComplete="current-password"
-                                placeholder="Enter current password"
-                                className={inputClass}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                <label
-                                    htmlFor="new-password"
-                                    className={labelClass}
-                                >
-                                    New password
-                                </label>
-                                <input
-                                    id="new-password"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    placeholder="Enter new password"
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    htmlFor="confirm-password"
-                                    className={labelClass}
-                                >
-                                    Confirm password
-                                </label>
-                                <input
-                                    id="confirm-password"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    placeholder="Confirm new password"
-                                    className={inputClass}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end pt-2">
-                            <button
-                                type="button"
-                                className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
-                            >
-                                Update password
-                            </button>
-                        </div>
-                    </div>
+                    <ChangePasswordForm cardClass={cardClass}/>
                 </section>
 
                 {/* Appearance */}

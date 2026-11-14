@@ -91,10 +91,6 @@ export default function TaskEditModal({ taskData, onClose, tasksQueryKey }: Task
             priority: data.priority
         }
 
-        console.log("Form data:", data)
-        console.log("Assigned user:", data.assignedToUserId)
-        console.log("Type:", typeof data.assignedToUserId)
-
         try {
             await editTaskMutation.mutateAsync({request: payload, taskId: taskData.id})
             onClose()

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 )
 
 type ListUsersUser struct {
@@ -38,28 +39,38 @@ func (s *ApiServer) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type ChangePasswordRequest struct {
-	currentPassword string `json:"current_password"`
-	newPassword     string `json:"new_password"`
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
 }
 
 func (r *ChangePasswordRequest) Validate() map[string]string {
 	problems := make(map[string]string)
 
-	if r.currentPassword == "" {
-		problems["currentPassword"] = "current password is required"
+	if r.CurrentPassword == "" {
+		problems["currentPassword"] = "Current password is required"
 	}
 
-	if r.newPassword == "" {
-		problems["newPassword"] = "new password is required"
-	} else if r.currentPassword == r.newPassword {
-		problems["newPassword"] = "passwords must be different"
+	if r.NewPassword == "" {
+		problems["newPassword"] = "New password is required"
+	} else if utf8.RuneCountInString(r.NewPassword) < 8 {
+		problems["newPassword"] = "Password must have at least 8 characters"
+	} else if !strings.ContainsAny(r.NewPassword, "0123456789") {
+		problems["newPassword"] = "Password must contain at least one digit"
+	} else if len([]byte(r.NewPassword)) > 72 {
+		problems["newPassword"] = "Password is too long"
+	} else if r.CurrentPassword == r.NewPassword {
+		problems["newPassword"] = "New password must be different"
 	}
 
 	return problems
 }
 
 func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value(userIdKey).(int64)
+	userId, ok := r.Context().Value(userIdKey).(int64)
+	if !ok {
+		WriteError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
 
 	var req ChangePasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -78,16 +89,18 @@ func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if existingUser == nil {
-		WriteError(w, http.StatusUnauthorized, "User does not exist")
+		WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
-	if err := existingUser.ComparePassword(req.currentPassword); err != nil {
-		WriteError(w, http.StatusUnauthorized, "Invalid current password")
+	if err := existingUser.ComparePassword(req.CurrentPassword); err != nil {
+		WriteValidationError(w, map[string]string{
+			"currentPassword": "Incorrect current password",
+		})
 		return
 	}
 
-	if err := s.store.Users.ChangePassword(r.Context(), userId, req.newPassword); err != nil {
+	if err := s.store.Users.ChangePassword(r.Context(), userId, req.NewPassword); err != nil {
 		WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}

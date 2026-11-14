@@ -29,6 +29,8 @@ func NewUserStore(db *sqlx.DB) *UserStore {
 	}
 }
 
+var ErrUserNotFound = errors.New("user not found")
+
 func (s *UserStore) CreateUser(ctx context.Context, email string, password string) (*User, error) {
 	const dml = "INSERT INTO users (email, password_hash) VALUES($1, $2) RETURNING *;"
 
@@ -94,9 +96,18 @@ func (s *UserStore) ChangePassword(ctx context.Context, userId int64, newPasswor
 		return fmt.Errorf("Failed to hash password: %w", err)
 	}
 
-	_, err = s.db.ExecContext(ctx, dml, hashedPassword, userId)
+	result, err := s.db.ExecContext(ctx, dml, string(hashedPassword), userId)
 	if err != nil {
 		return fmt.Errorf("Failed to change user password: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check affected rows: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
 	}
 
 	return nil
