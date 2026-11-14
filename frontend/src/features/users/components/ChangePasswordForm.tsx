@@ -5,6 +5,7 @@ import { changePassword } from "../api/users"
 import { useNavigate } from "react-router"
 import { ApiError } from "../../../shared/api/api"
 import { useState } from "react"
+import PasswordInput from "../../../shared/components/PasswordInput"
 
 const apiFieldToFormField = {
     currentPassword: "currentPassword",
@@ -13,7 +14,7 @@ const apiFieldToFormField = {
 
 export default function ChangePasswordForm() {
     const [successMessage, setSuccessMessage] = useState("")
-    
+
 
     const navigate = useNavigate()
 
@@ -100,9 +101,8 @@ export default function ChangePasswordForm() {
                 >
                     Current password
                 </label>
-                <input
+                <PasswordInput
                     id="current-password"
-                    type="password"
                     autoComplete="current-password"
                     placeholder="Enter current password"
                     className={`${inputClass} ${errors.currentPassword ? errorInputClass : normalInputClass }`}
@@ -121,9 +121,8 @@ export default function ChangePasswordForm() {
                     >
                         New password
                     </label>
-                    <input
+                    <PasswordInput
                         id="new-password"
-                        type="password"
                         autoComplete="new-password"
                         placeholder="Enter new password"
                         className={`${inputClass} ${errors.newPassword ? errorInputClass : normalInputClass }`}
@@ -149,9 +148,8 @@ export default function ChangePasswordForm() {
                     >
                         Confirm password
                     </label>
-                    <input
+                    <PasswordInput
                         id="confirm-password"
-                        type="password"
                         autoComplete="new-password"
                         placeholder="Confirm new password"
                         className={`${inputClass} ${errors.confirmPassword ? errorInputClass : normalInputClass }`}
