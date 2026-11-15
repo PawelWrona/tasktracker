@@ -89,6 +89,17 @@ func (s *RefreshSessionStore) DeleteByTokenHash(ctx context.Context, tokenHash s
 	return nil
 }
 
+func (s *RefreshSessionStore) DeleteAllByUserId(ctx context.Context, userId int64) error {
+	const dml = "DELETE FROM refresh_sessions WHERE user_id = $1"
+
+	_, err := s.db.ExecContext(ctx, dml, userId)
+	if err != nil {
+		return fmt.Errorf("failed to delete refresh sessions: %w", err)
+	}
+
+	return nil
+}
+
 func (s *RefreshSessionStore) ByTokenHash(ctx context.Context, tokenHash string) (*RefreshSession, error) {
 	const dml = "SELECT * FROM refresh_sessions WHERE token_hash = $1;"
 

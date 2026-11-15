@@ -1,11 +1,12 @@
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { defaultChangePasswordFormValues, type ChangePasswordFormValues } from "../types/changePasswordForm"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { changePassword } from "../api/users"
 import { useNavigate } from "react-router"
 import { ApiError } from "../../../shared/api/api"
 import { useState } from "react"
 import PasswordInput from "../../../shared/components/PasswordInput"
+import { tokenStore } from "../../../shared/api/tokenStore"
 
 const apiFieldToFormField = {
     currentPassword: "currentPassword",
@@ -15,6 +16,7 @@ const apiFieldToFormField = {
 export default function ChangePasswordForm() {
     const [successMessage, setSuccessMessage] = useState("")
 
+    const queryClient = useQueryClient()
 
     const navigate = useNavigate()
 
@@ -41,14 +43,19 @@ export default function ChangePasswordForm() {
 
         try {
             await changePasswordMutation.mutateAsync(payload)
-
-            reset()
-
-            setSuccessMessage("Your password has been updated successfully.")
         } catch(err) {
             if (err instanceof ApiError) {
                 if (err.status === 401) {
-                    navigate("/login", { replace: true })
+                    tokenStore.clear()
+                    queryClient.clear()
+
+                    navigate("/login", {
+                        replace: true,
+                        state: {
+                            errorMessage: "Your session has expired. Please sign in again."
+                        }
+                    })
+
                     return
                 }
 
@@ -56,22 +63,32 @@ export default function ChangePasswordForm() {
                     let hasFieldError = false
 
                     for (const [apiField, message] of Object.entries(err.fieldErrors)) {
-                        const field = apiFieldToFormField[apiField as keyof typeof apiFieldToFormField]
-                        setError(field, { type: "server", message })
-                        hasFieldError = true
+                        if (apiField in apiFieldToFormField) {
+                            const field = apiFieldToFormField[apiField as keyof typeof apiFieldToFormField]
+                            setError(field, { type: "server", message })
+                            hasFieldError = true
+                        }
                     }
 
                     if (hasFieldError) return
                 }
             }
 
-            console.error("Failed to change password", err)
-
             setError("root.serverError", {
                 type: "server",
                 message: "Something went wrong. Please try again."
             })
+
+            return
         }
+
+        reset()
+        tokenStore.clear()
+        queryClient.clear()
+        navigate("/login", { 
+            replace: true,
+            state: { successMessage: "Password changed successfully. Please sign in again." }
+        })
     }
 
     const inputClass = `

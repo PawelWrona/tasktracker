@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -100,10 +102,22 @@ func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := s.store.Users.ChangePassword(r.Context(), userId, req.NewPassword); err != nil {
+	if err := s.store.Users.ChangePasswordAndRevokeSessions(r.Context(), userId, req.NewPassword); err != nil {
+		log.Printf("Failed to revoke refresh sessions: %v", err)
 		WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Path:     "/api/auth",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+	})
 
 	w.WriteHeader(http.StatusNoContent)
 }
