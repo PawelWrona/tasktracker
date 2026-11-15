@@ -3,7 +3,7 @@ import { tokenStore } from "../shared/api/tokenStore";
 import { refreshAccessToken } from "../features/auth/api/auth";
 import DashboardPage from "../features/dashboard/pages/DashboardPage";
 import MyTasksPage from "../features/dashboard/pages/MyTasksPage";
-import SettingsPage from "../pages/SettingsPage";
+import SettingsPage from "../features/users/pages/SettingsPage";
 import MainLayout from "../shared/components/MainLayout";
 import LoginPage from "../features/auth/pages/LoginPage";
 import RegisterPage from "../features/auth/pages/RegisterPage";

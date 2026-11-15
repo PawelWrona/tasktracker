@@ -29,6 +29,8 @@ func NewUserStore(db *sqlx.DB) *UserStore {
 	}
 }
 
+var ErrUserNotFound = errors.New("user not found")
+
 func (s *UserStore) CreateUser(ctx context.Context, email string, password string) (*User, error) {
 	const dml = "INSERT INTO users (email, password_hash) VALUES($1, $2) RETURNING *;"
 
@@ -86,17 +88,41 @@ func (s *UserStore) All(ctx context.Context) ([]User, error) {
 	return users, nil
 }
 
-func (s *UserStore) ChangePassword(ctx context.Context, userId int64, newPassword string) error {
-	const dml = `UPDATE users SET password_hash = $1 WHERE id = $2`
-
+func (s *UserStore) ChangePasswordAndRevokeSessions(ctx context.Context, userId int64, newPassword string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("Failed to hash password: %w", err)
 	}
 
-	_, err = s.db.ExecContext(ctx, dml, hashedPassword, userId)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	const dmlChangePassword = `UPDATE users SET password_hash = $1 WHERE id = $2`
+	result, err := tx.ExecContext(ctx, dmlChangePassword, string(hashedPassword), userId)
 	if err != nil {
 		return fmt.Errorf("Failed to change user password: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check affected rows: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	const dmlRevokeSessions = "DELETE FROM refresh_sessions WHERE user_id = $1"
+	_, err = tx.ExecContext(ctx, dmlRevokeSessions, userId)
+	if err != nil {
+		return fmt.Errorf("failed to revoke refresh sessions: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil

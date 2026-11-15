@@ -148,12 +148,14 @@ export async function refreshAccessToken(): Promise<void> {
         credentials: "include"
     })
 
-    if(!response.ok){
-        tokenStore.clear()
+    if (!response.ok) {
+        if (response.status === 401) {
+            tokenStore.clear()
+        }
 
         let errData: unknown
 
-        try{
+        try {
             errData = await response.json()
         } catch {
             throw new ApiError(
@@ -162,7 +164,7 @@ export async function refreshAccessToken(): Promise<void> {
             )
         }
 
-        if(!isErrorResponse(errData)){
+        if (!isErrorResponse(errData)) {
             throw new ApiError(
                 response.status,
                 "Unexpected error occurred"

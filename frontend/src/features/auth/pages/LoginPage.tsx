@@ -1,5 +1,5 @@
 import { useActionState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { ApiError, type FieldErrors } from "../../../shared/api/api";
 import { login } from "../api/auth";
 
@@ -11,6 +11,8 @@ type FormState = {
 
 export default function LoginPage() {
     const navigate = useNavigate()
+    const location = useLocation()
+    const successMessage = location.state?.successMessage
 
     async function loginAction(_prevState: FormState, formData: FormData): Promise<FormState> {
         const email = String(formData.get("email"))
@@ -80,7 +82,16 @@ export default function LoginPage() {
     const labelClass = "mb-1.5 block text-sm font-medium text-gray-700"
 
     return (
-        <div className="flex min-h-dvh items-center justify-center bg-gray-100 px-4 py-8">
+        <div className="flex flex-col min-h-dvh items-center justify-center bg-gray-100 px-4 py-8">
+            {successMessage && (
+                <p
+                    role="status"
+                    className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700"
+                >
+                    {successMessage}
+                </p>
+            )}
+
             <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
 
                 {/* Header */}
