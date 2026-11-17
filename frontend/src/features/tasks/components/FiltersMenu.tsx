@@ -1,3 +1,4 @@
+
 import { useEffect, type Dispatch, type SetStateAction } from "react"
 import { defaultTaskFilters, type TaskFilters } from "../types/taskFilters"
 import { X } from "lucide-react"
@@ -10,16 +11,28 @@ type FiltersMenuProps = {
     enableFilterByAssignedUser: boolean
 }
 
-export default function FiltersMenu({ filters, handleFiltersChange, onClose, enableFilterByAssignedUser }: FiltersMenuProps) {
-    function updateFilters<K extends keyof TaskFilters>(key: K, value: TaskFilters[K]) {
+export default function FiltersMenu({
+    filters,
+    handleFiltersChange,
+    onClose,
+    enableFilterByAssignedUser
+}: FiltersMenuProps) {
+    function updateFilters<K extends keyof TaskFilters>(
+        key: K,
+        value: TaskFilters[K]
+    ) {
         handleFiltersChange(prev => ({
             ...prev,
             [key]: value
         }))
     }
 
-    const { data: users = [], isPending, isError } = useUsers(enableFilterByAssignedUser)
-    
+    const {
+        data: users = [],
+        isPending,
+        isError
+    } = useUsers(enableFilterByAssignedUser)
+
     useEffect(() => {
         if (enableFilterByAssignedUser && isError) {
             handleFiltersChange(prev => {
@@ -35,44 +48,73 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
         }
     }, [isError, enableFilterByAssignedUser, handleFiltersChange])
 
-    const inputClass = `w-full min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2 
-    text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100`
+    const inputClass = `
+        w-full min-w-0 rounded-lg border
+        border-border bg-surface px-3 py-2
+        text-sm text-text-secondary
+        outline-none transition-colors
+        focus:border-primary
+        focus:ring-2 focus:ring-primary/20
+        disabled:bg-surface-muted
+        disabled:text-text-subtle
+    `
+
+    const labelClass = `
+        mb-1 block text-sm font-medium text-text-secondary
+    `
 
     return (
-        <div 
+        <div
             id="task-filters-menu"
-            className="absolute right-0 z-50 mt-2 w-[min(340px,calc(100vw-2rem))] 
-            rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+            className="
+                absolute right-0 z-50 mt-2
+                w-[min(340px,calc(100vw-2rem))]
+                rounded-xl border border-border
+                bg-surface p-4 shadow-xl
+            "
         >
             <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">Filter tasks</h3>
+                <h3 className="font-semibold text-foreground">
+                    Filter tasks
+                </h3>
+
                 <button
+                    type="button"
                     aria-label="Close filters"
-                    onClick={() => onClose()}
-                    className="rounded-md p-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    onClick={onClose}
+                    className="
+                        cursor-pointer rounded-md p-1
+                        text-text-muted transition-colors
+                        hover:bg-surface-hover
+                        hover:text-foreground
+                    "
                 >
                     <X size={18} />
                 </button>
             </div>
+
             <div className="space-y-4">
-                { enableFilterByAssignedUser && (
-                    //Assigned to user 
+                {/* Assigned to user */}
+                {enableFilterByAssignedUser && (
                     <div>
-                        <label 
+                        <label
                             htmlFor="task-assignee"
-                            className="mb-1 block text-sm font-medium text-gray-700"
+                            className={labelClass}
                         >
                             Assigned to
                         </label>
-                        <select 
+
+                        <select
                             id="task-assignee"
                             value={filters.assignedToUserId ?? "all"}
-                            onChange={e => (
+                            onChange={e =>
                                 updateFilters(
                                     "assignedToUserId",
-                                    e.target.value === "all" ? null : Number(e.target.value)
+                                    e.target.value === "all"
+                                        ? null
+                                        : Number(e.target.value)
                                 )
-                            )}
+                            }
                             className={inputClass}
                         >
                             <option value="all">All users</option>
@@ -85,13 +127,13 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
                         </select>
 
                         {isPending && (
-                            <p className="mt-1 text-xs text-gray-400">
+                            <p className="mt-1 text-xs text-text-subtle">
                                 Loading users...
                             </p>
                         )}
 
                         {isError && (
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-text-muted">
                                 User list unavailable.
                             </p>
                         )}
@@ -100,22 +142,23 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
 
                 {/* Priority */}
                 <div>
-                    <label 
+                    <label
                         htmlFor="task-priority"
-                        className="mb-1 block text-sm font-medium text-gray-700"
+                        className={labelClass}
                     >
                         Priority
                     </label>
-                    <select 
+
+                    <select
                         id="task-priority"
                         value={filters.priority}
-                        onChange={e => (
+                        onChange={e =>
                             updateFilters(
-                                "priority", 
+                                "priority",
                                 e.target.value as TaskFilters["priority"]
                             )
-                        )}
-                        className={inputClass}    
+                        }
+                        className={inputClass}
                     >
                         <option value="all">All</option>
                         <option value="low">Low</option>
@@ -126,66 +169,75 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
 
                 {/* Deadline range */}
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                    <label className="mb-2 block text-sm font-medium text-text-secondary">
                         Deadline range
                     </label>
+
                     <div className="grid grid-cols-2 gap-2">
                         <div className="min-w-0">
-                            <label 
+                            <label
                                 htmlFor="task-deadline-from"
-                                className="mb-1 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 From
                             </label>
-                            <input 
-                                id="task-deadline-from" 
+
+                            <input
+                                id="task-deadline-from"
                                 type="date"
                                 value={filters.dueDateFrom}
-                                onChange={e => updateFilters("dueDateFrom", e.target.value )}
+                                onChange={e =>
+                                    updateFilters("dueDateFrom", e.target.value)
+                                }
                                 className={inputClass}
                             />
                         </div>
+
                         <div className="min-w-0">
-                            <label 
+                            <label
                                 htmlFor="task-deadline-to"
-                                className="mb-1 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 To
                             </label>
+
                             <input
-                                id="task-deadline-to"  
-                                type="date" 
+                                id="task-deadline-to"
+                                type="date"
                                 value={filters.dueDateTo}
-                                onChange={e => updateFilters("dueDateTo", e.target.value )}
+                                onChange={e =>
+                                    updateFilters("dueDateTo", e.target.value)
+                                }
                                 className={inputClass}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-gray-100" />
+                <div className="border-t border-border-subtle" />
 
-                {/* Sort by section */}
+                {/* Sort by */}
                 <div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="min-w-0">
-                            <label 
+                            <label
                                 htmlFor="task-sort-by"
-                                className="mb-1 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 Sort by
                             </label>
-                            <select 
+
+                            <select
                                 id="task-sort-by"
                                 value={filters.sortBy ?? "default"}
-                                onChange={e => (
+                                onChange={e =>
                                     updateFilters(
                                         "sortBy",
-                                        e.target.value === "default" 
-                                            ? null 
+                                        e.target.value === "default"
+                                            ? null
                                             : e.target.value as TaskFilters["sortBy"]
                                     )
-                                )}
+                                }
                                 className={inputClass}
                             >
                                 <option value="default">Default</option>
@@ -193,22 +245,24 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
                                 <option value="due_date">Due date</option>
                             </select>
                         </div>
+
                         <div className="min-w-0">
-                            <label 
+                            <label
                                 htmlFor="task-order"
-                                className="mb-1 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 Order
                             </label>
-                            <select 
+
+                            <select
                                 id="task-order"
                                 value={filters.sortOrder}
-                                onChange={e => (
+                                onChange={e =>
                                     updateFilters(
                                         "sortOrder",
                                         e.target.value as TaskFilters["sortOrder"]
                                     )
-                                )}
+                                }
                                 className={inputClass}
                             >
                                 <option value="asc">Ascending</option>
@@ -219,16 +273,33 @@ export default function FiltersMenu({ filters, handleFiltersChange, onClose, ena
                 </div>
 
                 {/* Actions */}
-                <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+                <div className="
+                    mt-5 flex items-center justify-between
+                    border-t border-border-subtle pt-4
+                ">
                     <button
-                        onClick={() => onClose()}
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 cursor-pointer"
+                        type="button"
+                        onClick={onClose}
+                        className="
+                            cursor-pointer rounded-lg
+                            bg-primary px-4 py-2
+                            text-sm font-medium text-primary-foreground
+                            transition-colors hover:bg-primary-hover
+                        "
                     >
                         Done
                     </button>
+
                     <button
-                        onClick={() => handleFiltersChange({...defaultTaskFilters})}
-                        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 cursor-pointer"
+                        type="button"
+                        onClick={() =>
+                            handleFiltersChange({ ...defaultTaskFilters })
+                        }
+                        className="
+                            flex cursor-pointer items-center gap-2
+                            text-sm text-text-muted
+                            transition-colors hover:text-foreground
+                        "
                     >
                         Reset
                     </button>

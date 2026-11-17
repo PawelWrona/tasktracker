@@ -112,20 +112,20 @@ export default function TaskCreateModal({ onClose }: TaskCreateModalProps) {
     }
 
     const inputClass = `
-        w-full min-w-0 rounded-lg border bg-white px-3 py-2
-        text-sm text-gray-800 outline-none transition-colors
-        placeholder:text-gray-400
+        w-full min-w-0 rounded-lg border bg-surface px-3 py-2
+        text-sm text-foreground outline-none transition-colors
+        placeholder:text-text-subtle
     `
 
     const normalInputClass = `
-        border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+        border-border focus:border-primary focus:ring-2 focus:ring-primary/20
     `
 
     const errorInputClass = `
-        border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100
+        border-danger focus:border-danger focus:ring-2 focus:ring-danger/20
     `
 
-    const labelClass = "mb-1.5 block text-sm font-medium text-gray-700"
+    const labelClass = "mb-1.5 block text-sm font-medium text-text-secondary"
 
     return createPortal(
         <dialog 
@@ -142,19 +142,20 @@ export default function TaskCreateModal({ onClose }: TaskCreateModalProps) {
                     }
                 }}    
             >
-                <div className="w-full max-w-xl rounded-xl bg-white p-6 shadow-xl">
+                <div className="w-full max-w-xl rounded-xl bg-surface p-6 shadow-xl">
                     <div className="mb-5 flex items-center justify-between">
                         <h2
                             id="create-task-title"
-                            className="text-xl font-semibold text-gray-900"
+                            className="text-xl font-semibold text-foreground"
                         >
                             Create new task
                         </h2>
 
                         <button
+                            type="button"
                             onClick={onClose}
                             aria-label="Close modal"
-                            className="cursor-pointer rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+                            className="cursor-pointer rounded-lg p-2 text-text-muted hover:bg-surface-hover"
                         >
                             <X size={20} />
                         </button>
@@ -164,7 +165,7 @@ export default function TaskCreateModal({ onClose }: TaskCreateModalProps) {
                         {/* title */}
                         <div>
                             <label htmlFor="task-title" className={labelClass}>
-                                Title <span className="text-red-500">*</span>
+                                Title <span className="text-danger">*</span>
                             </label>
                             <input 
                                 id="task-title"
@@ -206,7 +207,7 @@ export default function TaskCreateModal({ onClose }: TaskCreateModalProps) {
                                         ${errors.assignedToUserId
                                             ? errorInputClass
                                             : normalInputClass}
-                                        disabled:bg-gray-100
+                                        disabled:bg-surface-muted
                                     `}
                                     { ...register("assignedToUserId", {
                                         setValueAs: value => (value === "" || value === null ? null : Number(value))
@@ -271,23 +272,23 @@ export default function TaskCreateModal({ onClose }: TaskCreateModalProps) {
                         </div>
 
                         {errors.root?.serverError && (
-                            <p role="alert" className="text-sm text-red-600">
+                            <p role="alert" className="text-sm text-danger">
                                 {errors.root.serverError.message}
                             </p>
                         )}
 
-                        <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                        <div className="flex justify-end gap-3 border-t border-border-subtle pt-5">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover"
                             >
                                 Cancel
                             </button>
 
                             <button
                                 type="submit"
-                                className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                                className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
                                 disabled={isSubmitting}
                             >
                                 <Plus size={17} />

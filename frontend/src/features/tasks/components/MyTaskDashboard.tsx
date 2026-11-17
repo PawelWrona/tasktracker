@@ -25,13 +25,13 @@ export default function MyTaskDashboard({
         done: true,
     })
 
-    const [editingTask, setEditingTask ] = useState<Task | null>(null)
+    const [editingTask, setEditingTask] = useState<Task | null>(null)
 
     return (
         <>
             <div className="flex min-w-0 flex-col gap-6">
                 {fetchingError && (
-                    <p className="text-red-500">
+                    <p className="text-danger">
                         {fetchingError}
                     </p>
                 )}
@@ -44,30 +44,45 @@ export default function MyTaskDashboard({
                     return (
                         <div
                             key={column.status}
-                            className="overflow-hidden rounded-xl bg-gray-100"
+                            className="overflow-hidden rounded-xl bg-surface-muted"
                         >
-                            <div className="flex justify-between items-center">
-                                <h2 className="px-5 py-4 text-base font-bold text-gray-600">
+                            <div className="flex items-center justify-between">
+                                <h2 className="px-5 py-4 text-base font-bold text-text-secondary">
                                     {column.title}
-                                    <span className="ml-2 text-sm font-normal text-gray-400">
+                                    <span className="ml-2 text-sm font-normal text-text-subtle">
                                         ({filteredTasks.length})
                                     </span>
                                 </h2>
+
                                 <button
                                     type="button"
-                                    onClick={() => setOpenTables(prev => ({ ...prev, [column.status]: !prev[column.status] }))}
-                                    aria-label={openTabels[column.status] ? "Expand sidebar" : "Collapse sidebar"}
-                                    aria-expanded={!openTabels[column.status]}
-                                    className="mr-5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-200 cursor-pointer"
+                                    onClick={() => setOpenTables(prev => ({
+                                        ...prev,
+                                        [column.status]: !prev[column.status]
+                                    }))}
+                                    aria-label={
+                                        openTabels[column.status]
+                                            ? "Collapse section"
+                                            : "Expand section"
+                                    }
+                                    aria-expanded={openTabels[column.status]}
+                                    className="
+                                        mr-5 flex h-9 w-9 shrink-0
+                                        cursor-pointer items-center justify-center
+                                        rounded-lg text-text-muted
+                                        transition-colors
+                                        hover:bg-surface-hover
+                                        hover:text-foreground
+                                    "
                                 >
-                                    { openTabels[column.status]
+                                    {openTabels[column.status]
                                         ? <ChevronUp size={20} />
                                         : <ChevronDown size={20} />
                                     }
                                 </button>
                             </div>
 
-                            { openTabels[column.status] && (
+                            {openTabels[column.status] && (
                                 <div className="w-full overflow-x-auto">
                                     <table className="w-full min-w-[650px] table-fixed text-left text-sm">
                                         <colgroup>
@@ -76,7 +91,12 @@ export default function MyTaskDashboard({
                                             <col className="w-[15%]" />
                                             <col className="w-[15%]" />
                                         </colgroup>
-                                        <thead className="border-y border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+
+                                        <thead className="
+                                            border-y border-border
+                                            bg-surface
+                                            text-xs uppercase text-text-muted
+                                        ">
                                             <tr>
                                                 <th className="px-5 py-3 font-semibold">
                                                     Title
@@ -93,30 +113,34 @@ export default function MyTaskDashboard({
                                             </tr>
                                         </thead>
 
-                                        <tbody className="divide-y divide-gray-200">
+                                        <tbody className="divide-y divide-border">
                                             {filteredTasks.map(task => (
                                                 <tr
                                                     key={task.id}
-                                                    className="transition-colors hover:bg-gray-200/50 cursor-pointer"
+                                                    className="
+                                                        cursor-pointer
+                                                        transition-colors
+                                                        hover:bg-surface-hover/50
+                                                    "
                                                     onClick={() => setEditingTask(task)}
                                                 >
-                                                    <td className="px-5 py-4 font-medium text-gray-800">
+                                                    <td className="px-5 py-4 font-medium text-foreground">
                                                         <div className="truncate">
                                                             {task.title}
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-5 py-4 text-gray-600">
+                                                    <td className="px-5 py-4 text-text-secondary">
                                                         <div className="truncate">
                                                             {task.description || "—"}
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-5 py-4 text-gray-600">
+                                                    <td className="px-5 py-4 text-text-secondary">
                                                         {task.priority}
                                                     </td>
 
-                                                    <td className="px-5 py-4 whitespace-nowrap text-gray-600">
+                                                    <td className="whitespace-nowrap px-5 py-4 text-text-secondary">
                                                         {task.due_date
                                                             ? new Date(task.due_date).toLocaleDateString("pl-PL")
                                                             : "—"}
@@ -128,7 +152,7 @@ export default function MyTaskDashboard({
                                                 <tr>
                                                     <td
                                                         colSpan={4}
-                                                        className="px-5 py-6 text-center text-gray-400"
+                                                        className="px-5 py-6 text-center text-text-subtle"
                                                     >
                                                         No tasks
                                                     </td>
@@ -147,9 +171,9 @@ export default function MyTaskDashboard({
                 <TaskEditModal
                     taskData={editingTask}
                     onClose={() => setEditingTask(null)}
-                    tasksQueryKey={"my-tasks"}
+                    tasksQueryKey="my-tasks"
                 />
             )}
-         </>
+        </>
     )
 }

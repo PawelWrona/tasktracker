@@ -1,2 +1,92 @@
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    color-scheme: light;
+
+    /* Backgrounds */
+    --app-background: #ffffff;
+    --app-surface: #ffffff;
+    --app-surface-muted: #f3f4f6;
+    --app-surface-hover: #e5e7eb;
+
+    /* Text */
+    --app-foreground: #111827;
+    --app-text-secondary: #374151;
+    --app-text-muted: #6b7280;
+    --app-text-subtle: #9ca3af;
+
+    /* Borders */
+    --app-border: #e5e7eb;
+    --app-border-subtle: #f3f4f6;
+
+    /* Primary */
+    --app-primary: #2563eb;
+    --app-primary-hover: #1d4ed8;
+    --app-primary-foreground: #ffffff;
+
+    /* Status */
+    --app-danger: #ef4444;
+    --app-success: #16a34a;
+    --app-warning: #d97706;
+}
+
+.dark {
+    color-scheme: dark;
+
+    /* Backgrounds - muted navy */
+    --app-background: #101b2b;
+    --app-surface: #172537;
+    --app-surface-muted: #1e2d40;
+    --app-surface-hover: #283b52;
+
+    /* Text */
+    --app-foreground: #e9eef6;
+    --app-text-secondary: #cad5e3;
+    --app-text-muted: #99aabe;
+    --app-text-subtle: #8294aa;
+
+    /* Borders */
+    --app-border: #34475e;
+    --app-border-subtle: #27384c;
+
+    /* Primary - muted blue */
+    --app-primary: #7fa5cc;
+    --app-primary-hover: #98b9da;
+    --app-primary-foreground: #0f2033;
+
+    /* Status */
+    --app-danger: #f28f99;
+    --app-success: #79cbaa;
+    --app-warning: #e7bf78;
+}
+
+@theme inline {
+    --color-background: var(--app-background);
+    --color-surface: var(--app-surface);
+    --color-surface-muted: var(--app-surface-muted);
+    --color-surface-hover: var(--app-surface-hover);
+
+    --color-foreground: var(--app-foreground);
+    --color-text-secondary: var(--app-text-secondary);
+    --color-text-muted: var(--app-text-muted);
+    --color-text-subtle: var(--app-text-subtle);
+
+    --color-border: var(--app-border);
+    --color-border-subtle: var(--app-border-subtle);
+
+    --color-primary: var(--app-primary);
+    --color-primary-hover: var(--app-primary-hover);
+    --color-primary-foreground: var(--app-primary-foreground);
+
+    --color-danger: var(--app-danger);
+    --color-success: var(--app-success);
+    --color-warning: var(--app-warning);
+}
+
+@layer base {
+    body {
+        @apply bg-background text-foreground;
+    }
+}

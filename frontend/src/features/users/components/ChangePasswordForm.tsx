@@ -1,3 +1,4 @@
+
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { defaultChangePasswordFormValues, type ChangePasswordFormValues } from "../types/changePasswordForm"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -17,7 +18,6 @@ export default function ChangePasswordForm() {
     const [successMessage, setSuccessMessage] = useState("")
 
     const queryClient = useQueryClient()
-
     const navigate = useNavigate()
 
     const {
@@ -28,9 +28,14 @@ export default function ChangePasswordForm() {
         clearErrors,
         reset,
         formState: { errors, isSubmitting }
-    } = useForm<ChangePasswordFormValues>({ defaultValues: defaultChangePasswordFormValues, mode: "onBlur" })
+    } = useForm<ChangePasswordFormValues>({
+        defaultValues: defaultChangePasswordFormValues,
+        mode: "onBlur"
+    })
 
-    const changePasswordMutation = useMutation({ mutationFn: changePassword })
+    const changePasswordMutation = useMutation({
+        mutationFn: changePassword
+    })
 
     const onSubmit: SubmitHandler<ChangePasswordFormValues> = async (data) => {
         clearErrors("root")
@@ -43,7 +48,7 @@ export default function ChangePasswordForm() {
 
         try {
             await changePasswordMutation.mutateAsync(payload)
-        } catch(err) {
+        } catch (err) {
             if (err instanceof ApiError) {
                 if (err.status === 401) {
                     tokenStore.clear()
@@ -64,8 +69,15 @@ export default function ChangePasswordForm() {
 
                     for (const [apiField, message] of Object.entries(err.fieldErrors)) {
                         if (apiField in apiFieldToFormField) {
-                            const field = apiFieldToFormField[apiField as keyof typeof apiFieldToFormField]
-                            setError(field, { type: "server", message })
+                            const field = apiFieldToFormField[
+                                apiField as keyof typeof apiFieldToFormField
+                            ]
+
+                            setError(field, {
+                                type: "server",
+                                message
+                            })
+
                             hasFieldError = true
                         }
                     }
@@ -85,32 +97,45 @@ export default function ChangePasswordForm() {
         reset()
         tokenStore.clear()
         queryClient.clear()
-        navigate("/login", { 
+
+        navigate("/login", {
             replace: true,
-            state: { successMessage: "Password changed successfully. Please sign in again." }
+            state: {
+                successMessage: "Password changed successfully. Please sign in again."
+            }
         })
     }
 
     const inputClass = `
-        w-full rounded-lg
-        bg-white px-3 py-2.5 text-sm text-gray-800
+        w-full rounded-lg border
+        bg-surface px-3 py-2.5
+        text-sm text-foreground
         outline-none transition-colors
-        placeholder:text-gray-400
-        border
+        placeholder:text-text-subtle
     `
 
-    const labelClass = "mb-1.5 block text-sm font-medium text-gray-700"
+    const labelClass = `
+        mb-1.5 block text-sm font-medium text-text-secondary
+    `
 
     const normalInputClass = `
-        border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+        border-border
+        focus:border-primary
+        focus:ring-2 focus:ring-primary/20
     `
 
     const errorInputClass = `
-        border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100
+        border-danger
+        focus:border-danger
+        focus:ring-2 focus:ring-danger/20
     `
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            className="space-y-4"
+        >
             <div>
                 <label
                     htmlFor="current-password"
@@ -118,16 +143,24 @@ export default function ChangePasswordForm() {
                 >
                     Current password
                 </label>
+
                 <PasswordInput
                     id="current-password"
                     autoComplete="current-password"
                     placeholder="Enter current password"
-                    className={`${inputClass} ${errors.currentPassword ? errorInputClass : normalInputClass }`}
-                    { ...register("currentPassword", {
+                    className={`${inputClass} ${
+                        errors.currentPassword
+                            ? errorInputClass
+                            : normalInputClass
+                    }`}
+                    {...register("currentPassword", {
                         required: "Current password is required"
-                    }) }
+                    })}
                 />
-                <p className="mt-1.5 text-xs text-red-600">{errors.currentPassword?.message}</p>
+
+                <p className="mt-1.5 text-xs text-danger">
+                    {errors.currentPassword?.message}
+                </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -138,12 +171,17 @@ export default function ChangePasswordForm() {
                     >
                         New password
                     </label>
+
                     <PasswordInput
                         id="new-password"
                         autoComplete="new-password"
                         placeholder="Enter new password"
-                        className={`${inputClass} ${errors.newPassword ? errorInputClass : normalInputClass }`}
-                        { ...register("newPassword", {
+                        className={`${inputClass} ${
+                            errors.newPassword
+                                ? errorInputClass
+                                : normalInputClass
+                        }`}
+                        {...register("newPassword", {
                             required: "New password is required",
                             minLength: {
                                 value: 8,
@@ -153,9 +191,12 @@ export default function ChangePasswordForm() {
                                 value: /\d/,
                                 message: "Password must contain at least one digit"
                             }
-                        }) }
+                        })}
                     />
-                    <p className="mt-1.5 text-xs text-red-600">{errors.newPassword?.message}</p>
+
+                    <p className="mt-1.5 text-xs text-danger">
+                        {errors.newPassword?.message}
+                    </p>
                 </div>
 
                 <div>
@@ -165,22 +206,41 @@ export default function ChangePasswordForm() {
                     >
                         Confirm password
                     </label>
+
                     <PasswordInput
                         id="confirm-password"
                         autoComplete="new-password"
                         placeholder="Confirm new password"
-                        className={`${inputClass} ${errors.confirmPassword ? errorInputClass : normalInputClass }`}
-                        { ...register("confirmPassword", {
+                        className={`${inputClass} ${
+                            errors.confirmPassword
+                                ? errorInputClass
+                                : normalInputClass
+                        }`}
+                        {...register("confirmPassword", {
                             required: "Please confirm your password",
-                            validate: value => (value === getValues("newPassword") || "Passwords do not match")
-                        }) }
+                            validate: value =>
+                                value === getValues("newPassword") ||
+                                "Passwords do not match"
+                        })}
                     />
-                    <p className="mt-1.5 text-xs text-red-600">{errors.confirmPassword?.message}</p>
+
+                    <p className="mt-1.5 text-xs text-danger">
+                        {errors.confirmPassword?.message}
+                    </p>
                 </div>
             </div>
 
+            {errors.root?.serverError?.message && (
+                <p role="alert" className="text-sm text-danger">
+                    {errors.root.serverError.message}
+                </p>
+            )}
+
             {successMessage && (
-                <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                <p
+                    role="status"
+                    className="rounded-lg bg-success/10 p-3 text-sm text-success"
+                >
                     {successMessage}
                 </p>
             )}
@@ -189,9 +249,17 @@ export default function ChangePasswordForm() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                    className="
+                        cursor-pointer rounded-lg
+                        bg-primary px-4 py-2.5
+                        text-sm font-semibold text-primary-foreground
+                        transition-colors
+                        hover:bg-primary-hover
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                    "
                 >
-                    { isSubmitting ? "Updating..." : "Update password" }
+                    {isSubmitting ? "Updating..." : "Update password"}
                 </button>
             </div>
         </form>
