@@ -1,3 +1,4 @@
+
 import { UserRound, Settings, LogOut } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router"
@@ -59,37 +60,76 @@ export default function UserMenu() {
         }
     }
 
+    function handleSettingsClick() {
+        setIsUserMenuOpen(false)
+        navigate("/settings")
+    }
+
     return (
         <div className="relative" ref={userMenuRef}>
             <button
+                type="button"
                 onClick={() => setIsUserMenuOpen(prev => !prev)}
-                className="rounded-full bg-gray-100 text-gray-500 p-2 cursor-pointer hover:bg-gray-200"
+                ref={userButtonRef}
                 aria-expanded={isUserMenuOpen}
                 aria-label="User menu"
-                ref={userButtonRef}
+                className="
+                    cursor-pointer rounded-full
+                    bg-surface-muted p-2
+                    text-text-muted
+                    transition-colors
+                    hover:bg-surface-hover
+                    hover:text-foreground
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-primary/40
+                "
             >
                 <UserRound size={20} />
             </button>
-            { isUserMenuOpen && (
-                <div 
-                    className="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg"
+
+            {isUserMenuOpen && (
+                <div
+                    className="
+                        absolute right-0 z-50 mt-2 w-48
+                        rounded-xl border border-border
+                        bg-surface p-2 shadow-lg
+                    "
                 >
                     <button
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 
-                        text-left text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        type="button"
+                        onClick={handleSettingsClick}
+                        className="
+                            flex w-full cursor-pointer items-center
+                            gap-3 rounded-lg px-3 py-2
+                            text-left text-sm text-text-secondary
+                            transition-colors
+                            hover:bg-surface-hover
+                            hover:text-foreground
+                        "
                     >
                         <Settings size={17} />
                         Settings
                     </button>
-                    <div className="my-1 border-t border-gray-100" />
+
+                    <div className="my-1 border-t border-border-subtle" />
+
                     <button
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 
-                        text-left text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+                        type="button"
                         onClick={logoutAction}
                         disabled={isLoggingOut}
+                        className="
+                            flex w-full cursor-pointer items-center
+                            gap-3 rounded-lg px-3 py-2
+                            text-left text-sm text-danger
+                            transition-colors
+                            hover:bg-danger/10
+                            disabled:cursor-not-allowed
+                            disabled:opacity-60
+                        "
                     >
                         <LogOut size={17} />
-                        { isLoggingOut ? "Logging out" : "Log out" }
+                        {isLoggingOut ? "Logging out" : "Log out"}
                     </button>
                 </div>
             )}

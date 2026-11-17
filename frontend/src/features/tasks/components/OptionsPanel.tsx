@@ -27,15 +27,16 @@ export default function OptionsPanel({
         text-sm font-medium transition-colors cursor-pointer
         ${isCollapsed ? "justify-center px-2" : "gap-3 px-3"}
         ${isActive
-            ? "bg-blue-50 text-blue-600"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            ? "bg-primary/10 text-primary"
+            : "text-text-secondary hover:bg-surface-hover hover:text-foreground"
         }
     `
 
     return (
         <div
             className={`
-                flex h-full flex-col justify-between bg-gray-50 py-4
+                flex h-full flex-col justify-between
+                bg-surface-muted py-4
                 ${isCollapsed ? "px-2" : "px-4"}
             `}
         >
@@ -50,7 +51,10 @@ export default function OptionsPanel({
                     `}
                 >
                     {!isCollapsed && (
-                        <h1 className="min-w-0 text-xl font-bold tracking-tight text-gray-900">
+                        <h1 className="
+                            min-w-0 text-xl font-bold
+                            tracking-tight text-foreground
+                        ">
                             TaskTracker
                         </h1>
                     )}
@@ -61,7 +65,14 @@ export default function OptionsPanel({
                         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         aria-expanded={!isCollapsed}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-200 cursor-pointer"
+                        className="
+                            flex h-9 w-9 shrink-0 items-center
+                            justify-center rounded-lg
+                            text-text-muted transition-colors
+                            hover:bg-surface-hover
+                            hover:text-foreground
+                            cursor-pointer
+                        "
                     >
                         {isCollapsed
                             ? <ChevronRight size={20} />
@@ -96,9 +107,11 @@ export default function OptionsPanel({
                         aria-expanded={isProjectsOpen}
                         className={`
                             flex w-full items-center rounded-lg py-2.5
-                            text-sm font-medium text-gray-600
-                            transition-colors hover:bg-gray-100
-                            hover:text-gray-900 cursor-pointer
+                            text-sm font-medium text-text-secondary
+                            transition-colors
+                            hover:bg-surface-hover
+                            hover:text-foreground
+                            cursor-pointer
                             ${isCollapsed
                                 ? "justify-center px-2"
                                 : "justify-between px-3"
@@ -123,7 +136,7 @@ export default function OptionsPanel({
 
                     {isProjectsOpen && !isCollapsed && (
                         <div className="py-2">
-                            <p className="text-center text-xs text-gray-400">
+                            <p className="text-center text-xs text-text-subtle">
                                 No projects yet
                             </p>
                         </div>
@@ -131,7 +144,7 @@ export default function OptionsPanel({
                 </nav>
             </div>
 
-            <div className="border-t border-gray-200 pt-4">
+            <div className="border-t border-border pt-4">
                 <NavLink
                     to="/settings"
                     title="Settings"

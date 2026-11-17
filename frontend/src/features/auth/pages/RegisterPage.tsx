@@ -1,11 +1,12 @@
+
 import { useActionState } from "react"
 import { Link, useNavigate } from "react-router"
 import { ApiError, type FieldErrors } from "../../../shared/api/api"
 import { register } from "../api/auth"
 
 type FormState = {
-    message: string,
-    errors?: FieldErrors,
+    message: string
+    errors?: FieldErrors
     email: string
 }
 
@@ -16,7 +17,7 @@ export default function RegisterPage() {
         const email = String(formData.get("email"))
         const password = String(formData.get("password"))
         const confirmPassword = String(formData.get("confirmPassword"))
-        
+
         const errors: FieldErrors = {}
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -41,15 +42,15 @@ export default function RegisterPage() {
             return { message: "", errors, email }
         }
 
-        try{
-            await register({email, password})
+        try {
+            await register({ email, password })
 
-            navigate('/login')
+            navigate("/login")
 
             return { message: "", email }
-        } catch(err) {
-            if (err instanceof ApiError){
-                if(err.status === 400){
+        } catch (err) {
+            if (err instanceof ApiError) {
+                if (err.status === 400) {
                     return {
                         message: "",
                         errors: err.fieldErrors,
@@ -57,53 +58,73 @@ export default function RegisterPage() {
                     }
                 }
 
-                if(err.status === 409){
-                    return { message: "User with this email already exists", email }
+                if (err.status === 409) {
+                    return {
+                        message: "User with this email already exists",
+                        email
+                    }
                 }
             }
 
-            return { message: "Something went wrong. Please try again.", email }
+            return {
+                message: "Something went wrong. Please try again.",
+                email
+            }
         }
     }
 
-    const [state, formAction, isPending] = useActionState(registerAction, { message: "", email: "" })
+    const [state, formAction, isPending] = useActionState(
+        registerAction,
+        { message: "", email: "" }
+    )
 
     const inputClass = `
-        w-full rounded-lg border bg-white px-3 py-2.5
-        text-sm text-gray-800 outline-none transition-colors
-        placeholder:text-gray-400
+        w-full rounded-lg border
+        bg-surface px-3 py-2.5
+        text-sm text-foreground
+        outline-none transition-colors
+        placeholder:text-text-subtle
     `
 
     const normalInputClass = `
-        border-gray-300
-        focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+        border-border
+        focus:border-primary
+        focus:ring-2 focus:ring-primary/20
     `
 
     const errorInputClass = `
-        border-red-500
-        focus:border-red-500 focus:ring-2 focus:ring-red-100
+        border-danger
+        focus:border-danger
+        focus:ring-2 focus:ring-danger/20
     `
 
-    const labelClass = "mb-1.5 block text-sm font-medium text-gray-700"
+    const labelClass = `
+        mb-1.5 block text-sm font-medium text-text-secondary
+    `
 
     return (
-        <div className="flex min-h-dvh items-center justify-center bg-gray-100 px-4 py-8">
-            <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-
+        <div className="
+            flex min-h-dvh items-center justify-center
+            bg-surface-muted px-4 py-8
+        ">
+            <div className="
+                w-full max-w-md rounded-xl
+                border border-border
+                bg-surface p-8 shadow-sm
+            ">
                 {/* Header */}
                 <div className="mb-8 text-center">
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-foreground">
                         Create an account
                     </h1>
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-text-muted">
                         Sign up to get started
                     </p>
                 </div>
 
                 {/* Form */}
                 <form action={formAction} noValidate className="space-y-5">
-
                     {/* Email */}
                     <div>
                         <label htmlFor="email" className={labelClass}>
@@ -133,7 +154,7 @@ export default function RegisterPage() {
                             <p
                                 id="email-error"
                                 role="alert"
-                                className="mt-1.5 text-xs text-red-600"
+                                className="mt-1.5 text-xs text-danger"
                             >
                                 {state.errors.email}
                             </p>
@@ -170,7 +191,7 @@ export default function RegisterPage() {
                             <p
                                 id="password-error"
                                 role="alert"
-                                className="mt-1.5 text-xs text-red-600"
+                                className="mt-1.5 text-xs text-danger"
                             >
                                 {state.errors.password}
                             </p>
@@ -207,7 +228,7 @@ export default function RegisterPage() {
                             <p
                                 id="confirm-password-error"
                                 role="alert"
-                                className="mt-1.5 text-xs text-red-600"
+                                className="mt-1.5 text-xs text-danger"
                             >
                                 {state.errors.confirmPassword}
                             </p>
@@ -218,7 +239,10 @@ export default function RegisterPage() {
                     {state.message && (
                         <p
                             role="alert"
-                            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
+                            className="
+                                rounded-lg bg-danger/10
+                                px-3 py-2 text-sm text-danger
+                            "
                         >
                             {state.message}
                         </p>
@@ -230,12 +254,13 @@ export default function RegisterPage() {
                         disabled={isPending}
                         className="
                             w-full cursor-pointer rounded-lg
-                            bg-blue-600 px-4 py-2.5
-                            text-sm font-semibold text-white
-                            transition-colors hover:bg-blue-700
+                            bg-primary px-4 py-2.5
+                            text-sm font-semibold text-primary-foreground
+                            transition-colors
+                            hover:bg-primary-hover
                             focus-visible:outline-2
                             focus-visible:outline-offset-2
-                            focus-visible:outline-blue-600
+                            focus-visible:outline-primary
                             disabled:cursor-not-allowed
                             disabled:opacity-60
                         "
@@ -246,11 +271,15 @@ export default function RegisterPage() {
 
                 {/* Sign in */}
                 <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-text-muted">
                         Already have an account?{" "}
                         <Link
                             to="/login"
-                            className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                            className="
+                                font-semibold text-primary
+                                hover:text-primary-hover
+                                hover:underline
+                            "
                         >
                             Sign in
                         </Link>

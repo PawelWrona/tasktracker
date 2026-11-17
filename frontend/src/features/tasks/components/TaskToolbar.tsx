@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react"
 import { defaultTaskFilters, type TaskFilters } from "../types/taskFilters"
 import FiltersMenu from "./FiltersMenu"
@@ -10,7 +11,12 @@ type TaskToolbarProps = {
     enableFilterByAssignedUser: boolean,
 }
 
-export default function TaskToolbar({ filters, handleFiltersChange, isCreateBtnVisible = true, enableFilterByAssignedUser }: TaskToolbarProps) {
+export default function TaskToolbar({
+    filters,
+    handleFiltersChange,
+    isCreateBtnVisible = true,
+    enableFilterByAssignedUser
+}: TaskToolbarProps) {
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false)
     const filterMenuRef = useRef<HTMLDivElement>(null)
     const filterButtonRef = useRef<HTMLButtonElement>(null)
@@ -22,7 +28,7 @@ export default function TaskToolbar({ filters, handleFiltersChange, isCreateBtnV
 
         function handleClickOutside(e: PointerEvent) {
             if (
-                filterMenuRef.current && 
+                filterMenuRef.current &&
                 e.target instanceof Node &&
                 !filterMenuRef.current.contains(e.target)
             ) {
@@ -60,42 +66,74 @@ export default function TaskToolbar({ filters, handleFiltersChange, isCreateBtnV
     const activeFiltersCount = countFilters()
 
     return (
-        <div className="w-full flex justify-end gap-3 mb-5">
+        <div className="mb-5 flex w-full justify-end gap-3">
             <div className="relative" ref={filterMenuRef}>
-                <button 
-                    className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 cursor-pointer"
-                    onClick={() => setIsFilterMenuOpen(prev => !prev)}
+                <button
+                    type="button"
                     ref={filterButtonRef}
+                    onClick={() => setIsFilterMenuOpen(prev => !prev)}
                     aria-expanded={isFilterMenuOpen}
                     aria-controls={isFilterMenuOpen ? "task-filters-menu" : undefined}
+                    className={`
+                        flex cursor-pointer items-center gap-2
+                        rounded-lg border border-border
+                        bg-surface-muted px-4 py-2
+                        text-text-secondary transition-colors
+                        hover:bg-surface-hover hover:text-foreground
+                        focus-visible:outline-none
+                        focus-visible:ring-2 focus-visible:ring-primary/40
+                        ${isFilterMenuOpen ? "bg-surface-hover" : ""}
+                    `}
                 >
-                    Filter 
-                    { activeFiltersCount > 0 && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs text-white">
+                    Filter
+
+                    {activeFiltersCount > 0 && (
+                        <span
+                            className="
+                                flex h-5 min-w-5 items-center
+                                justify-center rounded-full
+                                bg-primary px-1
+                                text-xs text-primary-foreground
+                            "
+                        >
                             {activeFiltersCount}
                         </span>
-                    ) 
-                    }
+                    )}
                 </button>
 
-                { isFilterMenuOpen && 
-                    <FiltersMenu 
-                        filters={filters} 
+                {isFilterMenuOpen && (
+                    <FiltersMenu
+                        filters={filters}
                         handleFiltersChange={handleFiltersChange}
                         onClose={() => setIsFilterMenuOpen(false)}
                         enableFilterByAssignedUser={enableFilterByAssignedUser}
-                    /> 
-                }
+                    />
+                )}
             </div>
-            { isCreateBtnVisible && (
+
+            {isCreateBtnVisible && (
                 <div className="relative">
-                    <button 
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 cursor-pointer"
+                    <button
+                        type="button"
                         onClick={() => setIsTaskCreateModalOpen(true)}
+                        className="
+                            cursor-pointer rounded-lg
+                            bg-primary px-4 py-2
+                            text-primary-foreground
+                            transition-colors
+                            hover:bg-primary-hover
+                            focus-visible:outline-none
+                            focus-visible:ring-2 focus-visible:ring-primary/40
+                        "
                     >
                         Add new task
                     </button>
-                    { isTaskCreateModalOpen && <TaskCreateModal onClose={() => setIsTaskCreateModalOpen(false)} /> }
+
+                    {isTaskCreateModalOpen && (
+                        <TaskCreateModal
+                            onClose={() => setIsTaskCreateModalOpen(false)}
+                        />
+                    )}
                 </div>
             )}
         </div>
