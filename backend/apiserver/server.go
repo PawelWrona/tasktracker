@@ -42,6 +42,7 @@ func (s *ApiServer) Start(ctx context.Context) error {
 
 	mux.Handle("GET /users", s.AuthMiddleware(http.HandlerFunc(s.ListUsersHandler)))
 	mux.Handle("PATCH /users/me/change-password", s.AuthMiddleware(http.HandlerFunc(s.ChangePasswordHandler)))
+	mux.Handle("PATCH /users/me/change-avatar", s.AuthMiddleware(http.HandlerFunc(s.ChangeAvatarHandler)))
 
 	server := &http.Server{
 		Addr:    net.JoinHostPort(s.config.ApiServerHost, s.config.ApiServerPort),

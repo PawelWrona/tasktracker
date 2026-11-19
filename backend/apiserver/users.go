@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"tasktracker/avatar"
 	"time"
 	"unicode/utf8"
 )
@@ -120,4 +121,28 @@ func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request
 	})
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) {
+	const maxUploadBytes int64 = 2 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
+
+	file, _, err := r.FormFile("avatar")
+	if err != nil {
+		var maxErr *http.MaxBytesError
+		if errors.As(err, &maxErr) {
+			WriteError(w, http.StatusRequestEntityTooLarge, "The file is too large")
+			return
+		}
+
+		WriteError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	defer file.Close()
+
+	avatarBytes, err := avatar.ProcessAvatar(file)
+	if err != nil {
+		WriteError(w, http.StatusBadRequest, "Invalid avatar")
+		return
+	}
 }
