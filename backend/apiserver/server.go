@@ -41,6 +41,7 @@ func (s *ApiServer) Start(ctx context.Context) error {
 	mux.Handle("PATCH /tasks/{task_id}", s.AuthMiddleware(http.HandlerFunc(s.UpdateTaskHandler)))
 
 	mux.Handle("GET /users", s.AuthMiddleware(http.HandlerFunc(s.ListUsersHandler)))
+	mux.Handle("GET /users/me", s.AuthMiddleware(http.HandlerFunc(s.GetCurrentUserHandler)))
 	mux.Handle("PATCH /users/me/change-password", s.AuthMiddleware(http.HandlerFunc(s.ChangePasswordHandler)))
 
 	server := &http.Server{

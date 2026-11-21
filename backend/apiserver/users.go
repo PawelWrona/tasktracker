@@ -40,6 +40,32 @@ func (s *ApiServer) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ListUsersResponse{Users: usersResponse})
 }
 
+type GetCurrentUserResponse struct {
+	Id    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+func (s *ApiServer) GetCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
+	userId, ok := r.Context().Value(userIdKey).(int64)
+	if !ok {
+		WriteError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	user, err := s.store.Users.ByUserId(r.Context(), userId)
+	if err != nil {
+		WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(GetCurrentUserResponse{
+		Id:    user.Id,
+		Email: user.Email,
+	})
+}
+
 type ChangePasswordRequest struct {
 	CurrentPassword string `json:"current_password"`
 	NewPassword     string `json:"new_password"`
