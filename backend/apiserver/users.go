@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -124,6 +125,12 @@ func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) {
+	userId, ok := r.Context().Value(userIdKey).(int64)
+	if !ok {
+		WriteError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
 	const maxUploadBytes int64 = 2 << 20
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
 
@@ -145,4 +152,28 @@ func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) 
 		WriteError(w, http.StatusBadRequest, "Invalid avatar")
 		return
 	}
+
+	avatarKey := avatar.GenerateAvatarKey(userId)
+
+	if err := s.r2Storage.Upload(r.Context(), avatarKey, avatarBytes); err != nil {
+		log.Printf("Failed to upload avatar to R2 storage: %v", err)
+		WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	if err := s.store.Users.ChangeAvatar(r.Context(), userId, avatarKey); err != nil {
+		log.Printf("Failed to update avatar in database: %v", err)
+
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if deleteFromStorageErr := s.r2Storage.Delete(cleanupCtx, avatarKey); deleteFromStorageErr != nil {
+			log.Printf("Failed to remove avatar from R2 storage: %v", deleteFromStorageErr)
+		}
+
+		WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

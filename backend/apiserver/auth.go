@@ -45,6 +45,7 @@ func (s *ApiServer) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	existingUser, err := s.store.Users.ByEmail(r.Context(), req.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Printf("failed to fetch user data: %v", err)
 		WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
@@ -99,6 +100,7 @@ func (s *ApiServer) SignInHandler(w http.ResponseWriter, r *http.Request) {
 
 	existingUser, err := s.store.Users.ByEmail(r.Context(), req.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		log.Printf("failed to fetch user data: %v", err)
 		WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
@@ -114,6 +116,7 @@ func (s *ApiServer) SignInHandler(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := s.tokenManager.GenerateAccessToken(existingUser.Id)
 	if err != nil {
+		log.Printf("failed to generate user access token: %v", err)
 		WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}

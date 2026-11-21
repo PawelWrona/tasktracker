@@ -10,6 +10,7 @@ import (
 
 	stdDraw "image/draw"
 
+	"github.com/google/uuid"
 	xdraw "golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 )
@@ -90,4 +91,12 @@ func ProcessAvatar(file io.ReadSeeker) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func GenerateAvatarKey(userId int64) string {
+	return fmt.Sprintf(
+		"users/%d/avatars/%s.jpg",
+		userId,
+		uuid.NewString(),
+	)
 }

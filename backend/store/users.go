@@ -19,8 +19,9 @@ type User struct {
 	Id             int64     `db:"id" json:"id"`
 	Email          string    `db:"email" json:"email"`
 	HashedPassword string    `db:"password_hash" json:"-"`
-	Created_at     time.Time `db:"created_at" json:"created_at"`
-	Updated_at     time.Time `db:"updated_at" json:"updated_at"`
+	CreatedAt      time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at" json:"updated_at"`
+	AvatarKey      *string   `db:"avatar_key" json:"avatar_key"`
 }
 
 func NewUserStore(db *sqlx.DB) *UserStore {
@@ -88,6 +89,26 @@ func (s *UserStore) All(ctx context.Context) ([]User, error) {
 	return users, nil
 }
 
+func (s *UserStore) ChangeAvatar(ctx context.Context, userId int64, avatarKey string) error {
+	const dml = `UPDATE users SET avatar_key = $1 WHERE id = $2;`
+
+	result, err := s.db.ExecContext(ctx, dml, avatarKey, userId)
+	if err != nil {
+		return fmt.Errorf("Failed to change avatarKey: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("Failed to check affected row: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+}
+
 func (s *UserStore) ChangePasswordAndRevokeSessions(ctx context.Context, userId int64, newPassword string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -100,7 +121,7 @@ func (s *UserStore) ChangePasswordAndRevokeSessions(ctx context.Context, userId 
 	}
 	defer tx.Rollback()
 
-	const dmlChangePassword = `UPDATE users SET password_hash = $1 WHERE id = $2`
+	const dmlChangePassword = `UPDATE users SET password_hash = $1 WHERE id = $2;`
 	result, err := tx.ExecContext(ctx, dmlChangePassword, string(hashedPassword), userId)
 	if err != nil {
 		return fmt.Errorf("Failed to change user password: %w", err)

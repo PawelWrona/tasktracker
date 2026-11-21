@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"tasktracker/config"
+	"tasktracker/storage"
 	"tasktracker/store"
 	"time"
 )
@@ -16,13 +17,15 @@ type ApiServer struct {
 	config       *config.Config
 	store        *store.Store
 	tokenManager *tokenManager
+	r2Storage    *storage.R2Storage
 }
 
-func New(config *config.Config, store *store.Store, tokenManager *tokenManager) *ApiServer {
+func New(config *config.Config, store *store.Store, tokenManager *tokenManager, r2Storage *storage.R2Storage) *ApiServer {
 	return &ApiServer{
 		config:       config,
 		store:        store,
 		tokenManager: tokenManager,
+		r2Storage:    r2Storage,
 	}
 }
 
