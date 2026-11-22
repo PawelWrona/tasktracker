@@ -41,8 +41,10 @@ func (s *ApiServer) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type GetCurrentUserResponse struct {
-	Id    int64  `json:"id"`
-	Email string `json:"email"`
+	Id        int64   `json:"id"`
+	Name      string  `json:"name"`
+	Email     string  `json:"email"`
+	AvatarUrl *string `json:"avatar_url"`
 }
 
 func (s *ApiServer) GetCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,11 +60,15 @@ func (s *ApiServer) GetCurrentUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	name, _, _ := strings.Cut(user.Email, "@")
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(GetCurrentUserResponse{
-		Id:    user.Id,
-		Email: user.Email,
+		Id:        user.Id,
+		Name:      name,
+		Email:     user.Email,
+		AvatarUrl: nil,
 	})
 }
 
