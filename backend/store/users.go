@@ -21,6 +21,7 @@ type User struct {
 	HashedPassword string    `db:"password_hash" json:"-"`
 	Created_at     time.Time `db:"created_at" json:"created_at"`
 	Updated_at     time.Time `db:"updated_at" json:"updated_at"`
+	AvatarKey      *string   `db:"avatar_key" json:"avatar_key"`
 }
 
 func NewUserStore(db *sqlx.DB) *UserStore {
