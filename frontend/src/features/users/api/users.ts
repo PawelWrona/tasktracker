@@ -1,3 +1,4 @@
+import type { ValidationValue } from "react-hook-form"
 import { ApiError, isErrorResponse } from "../../../shared/api/api"
 import { authenticatedFetch } from "../../auth/api/auth"
 
@@ -80,6 +81,83 @@ export async function getUsers(): Promise<User[]> {
     }
 
     return responseData.users
+}
+
+type GetCurrentUserResponse = {
+    id: number,
+    name: string,
+    email: string,
+    avatar_url: string | null, 
+}
+
+function isGetCurrentUserResponse(value: unknown): value is GetCurrentUserResponse {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "id" in value &&
+        "name" in value &&
+        "email" in value &&
+        "avatar_url" in value &&
+        typeof value.id === "number" &&
+        typeof value.name === "string" &&
+        typeof value.email === "string" &&
+        (
+            value.avatar_url === null ||
+            typeof value.avatar_url === "string"
+        )
+    )
+}
+
+export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
+    const response = await authenticatedFetch("/api/users/me", {
+        method: "GET",
+        credentials: "include"
+    })
+
+    if (!response.ok) {
+        let errData: unknown
+
+        try {
+            errData = await response.json()
+        } catch {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        if (!isErrorResponse(errData)) {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        throw new ApiError(
+            response.status,
+            errData.message
+        )
+    }
+
+    let responseData: unknown
+
+    try {
+        responseData = await response.json()
+    } catch {
+        throw new ApiError(
+            response.status,
+            "Unexpected response from the server"
+        )
+    }
+
+    if (!isGetCurrentUserResponse(responseData)) {
+        throw new ApiError(
+            response.status,
+            "Unexpected response from the server"
+        )
+    }
+
+    return responseData
 }
 
 type changePasswordRequest = {
