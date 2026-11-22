@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import { logout } from "../../features/auth/api/auth"
 import { ApiError } from "../api/api"
+import { useCurrentUser } from "../../features/users/hooks/useCurrentUser"
 
 export default function UserMenu() {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
@@ -12,6 +13,8 @@ export default function UserMenu() {
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const navigate = useNavigate()
+
+    const {data: user, isPending, isError} = useCurrentUser()
 
     useEffect(() => {
         if (!isUserMenuOpen) return
@@ -74,18 +77,25 @@ export default function UserMenu() {
                 aria-expanded={isUserMenuOpen}
                 aria-label="User menu"
                 className="
-                    cursor-pointer rounded-full
-                    bg-surface-muted p-2
-                    text-text-muted
-                    transition-colors
+                    flex h-10 w-10 cursor-pointer
+                    items-center justify-center
+                    overflow-hidden rounded-full
+                    bg-surface-muted text-text-muted
                     hover:bg-surface-hover
-                    hover:text-foreground
                     focus-visible:outline-none
                     focus-visible:ring-2
                     focus-visible:ring-primary/40
                 "
             >
-                <UserRound size={20} />
+                {user?.avatar_url ? (
+                    <img
+                        src={user.avatar_url}
+                        alt="User avatar"
+                        className="h-9 w-9 rounded-full object-cover"
+                    />
+                ) : (
+                    <UserRound size={20} />
+                )}
             </button>
 
             {isUserMenuOpen && (
@@ -96,6 +106,22 @@ export default function UserMenu() {
                         bg-surface p-2 shadow-lg
                     "
                 >
+                    <div className="px-3 py-1">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                            {isPending
+                                ? "Loading..."
+                                : isError
+                                    ? "User unavailable"
+                                    : user?.name}
+                        </p>
+
+                        <p className="truncate text-xs text-text-muted pt-1">
+                            {user?.email}
+                        </p>
+                    </div>
+
+                    <div className="my-1 border-t border-border-subtle" />
+
                     <button
                         type="button"
                         onClick={handleSettingsClick}
