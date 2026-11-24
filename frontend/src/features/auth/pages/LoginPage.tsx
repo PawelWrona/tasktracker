@@ -3,6 +3,7 @@ import { useActionState } from "react"
 import { Link, useLocation, useNavigate } from "react-router"
 import { ApiError, type FieldErrors } from "../../../shared/api/api"
 import { login } from "../api/auth"
+import { useQueryClient } from "@tanstack/react-query"
 
 type FormState = {
     message: string
@@ -14,6 +15,7 @@ export default function LoginPage() {
     const navigate = useNavigate()
     const location = useLocation()
     const successMessage = location.state?.successMessage
+    const queryClient = useQueryClient()
 
     async function loginAction(_prevState: FormState, formData: FormData): Promise<FormState> {
         const email = String(formData.get("email"))
@@ -39,6 +41,9 @@ export default function LoginPage() {
 
         try {
             await login({ email, password })
+
+            await queryClient.cancelQueries()
+            queryClient.clear()
 
             navigate("/")
 

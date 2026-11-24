@@ -5,6 +5,7 @@ import { useNavigate } from "react-router"
 import { logout } from "../../features/auth/api/auth"
 import { ApiError } from "../api/api"
 import { useCurrentUser } from "../../features/users/hooks/useCurrentUser"
+import { useQueryClient } from "@tanstack/react-query"
 
 export default function UserMenu() {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
@@ -13,6 +14,8 @@ export default function UserMenu() {
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const navigate = useNavigate()
+
+    const queryClient = useQueryClient()
 
     const {data: user, isPending, isError} = useCurrentUser()
 
@@ -59,7 +62,12 @@ export default function UserMenu() {
                 console.error("Logout network error:", err)
             }
         } finally {
+            await queryClient.cancelQueries()
+            queryClient.clear()
+
             navigate("/login", { replace: true })
+            
+            setIsLoggingOut(false)
         }
     }
 
