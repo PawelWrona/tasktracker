@@ -3,6 +3,9 @@ package storage
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -49,6 +52,23 @@ func (s *R2Storage) Upload(ctx context.Context, key string, data []byte) error {
 	})
 
 	return err
+}
+
+func (s *R2Storage) GetSignedUrl(ctx context.Context, key string) (string, error) {
+	svc := s3.NewPresignClient(s.client)
+
+	req, err := svc.PresignGetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	}, func(o *s3.PresignOptions) {
+		o.Expires = 20 * time.Minute
+	})
+	if err != nil {
+		log.Printf("Couldn't get a presigned request for bucket %v with key %v: %v\n", s.bucket, key, err)
+		return "", fmt.Errorf("Failed to generate avatar url: %w", err)
+	}
+
+	return req.URL, nil
 }
 
 // func (s *R2Storage) Get(ctx context.Context, key string) ([]byte, error) {

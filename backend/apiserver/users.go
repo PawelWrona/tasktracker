@@ -64,13 +64,25 @@ func (s *ApiServer) GetCurrentUserHandler(w http.ResponseWriter, r *http.Request
 
 	name, _, _ := strings.Cut(user.Email, "@")
 
+	var avatarUrl *string
+
+	if user.AvatarKey != nil && *user.AvatarKey != "" {
+		url, err := s.r2Storage.GetSignedUrl(r.Context(), *user.AvatarKey)
+		if err != nil {
+			WriteError(w, http.StatusInternalServerError, "Internal server error")
+			return
+		}
+
+		avatarUrl = &url
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(GetCurrentUserResponse{
 		Id:        user.Id,
 		Name:      name,
 		Email:     user.Email,
-		AvatarUrl: nil,
+		AvatarUrl: avatarUrl,
 	})
 }
 
