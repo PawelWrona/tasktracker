@@ -204,6 +204,8 @@ export async function refreshAccessToken(): Promise<void> {
 
 export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     async function makeRequest(): Promise<Response> {
+        options.signal?.throwIfAborted()
+
         const token = tokenStore.get()
         const headers = new Headers(options.headers)
 
@@ -221,7 +223,10 @@ export async function authenticatedFetch(url: string, options: RequestInit = {})
     let response = await makeRequest()
 
     if (response.status === 401) {
+        options.signal?.throwIfAborted()
         await refreshAccessToken()
+
+        options.signal?.throwIfAborted()
         response = await makeRequest()
     }
 
