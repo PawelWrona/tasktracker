@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
     const { data: tasks = [], isPending, isError, error } = useQuery({
         queryKey: ['tasks'],
-        queryFn: getTasks
+        queryFn: ({signal}) => getTasks(signal)
     })
 
     useEffect(() => {

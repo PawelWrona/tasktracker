@@ -108,10 +108,11 @@ function isGetCurrentUserResponse(value: unknown): value is GetCurrentUserRespon
     )
 }
 
-export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
+export async function getCurrentUser(signal?: AbortSignal): Promise<GetCurrentUserResponse> {
     const response = await authenticatedFetch("/api/users/me", {
         method: "GET",
-        credentials: "include"
+        credentials: "include",
+        signal
     })
 
     if (!response.ok) {

@@ -51,8 +51,8 @@ function isGetTasksResponse(value: unknown): value is GetTasksResponse {
     return value.tasks.every(isTask)
 }
 
-export async function getTasks(): Promise<Task[]> {
-    const response = await authenticatedFetch("/api/tasks", { method: "GET" })
+export async function getTasks(signal?: AbortSignal): Promise<Task[]> {
+    const response = await authenticatedFetch("/api/tasks", { method: "GET", signal })
 
     if (!response.ok) {
         let errData: unknown
@@ -100,8 +100,8 @@ export async function getTasks(): Promise<Task[]> {
     return responseData.tasks
 }
 
-export async function getMyTasks(): Promise<Task[]> {
-    const response = await authenticatedFetch("/api/tasks/assigned-to-me", { method: "GET" })
+export async function getMyTasks(signal?: AbortSignal): Promise<Task[]> {
+    const response = await authenticatedFetch("/api/tasks/assigned-to-me", { method: "GET", signal })
 
     if (!response.ok) {
         let errData: unknown

@@ -18,6 +18,7 @@ export default function UserMenu() {
     const queryClient = useQueryClient()
 
     const {data: user, isPending, isError} = useCurrentUser()
+    console.log(user)
 
     useEffect(() => {
         if (!isUserMenuOpen) return

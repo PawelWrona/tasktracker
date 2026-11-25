@@ -15,7 +15,7 @@ export default function MyTasksPage() {
 
     const { data: tasks = [], isPending, isError, error } = useQuery({
         queryKey: ['my-tasks'],
-        queryFn: getMyTasks
+        queryFn: ({signal}) => getMyTasks(signal)
     })
 
     useEffect(() => {

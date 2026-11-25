@@ -4,7 +4,7 @@ import { getCurrentUser } from "../api/users";
 export function useCurrentUser() {
     return useQuery({
         queryKey: ["currentUser"],
-        queryFn: getCurrentUser,
+        queryFn: ({signal}) => getCurrentUser(signal),
         staleTime: 5 * 60 * 1000
     })
 }
