@@ -186,6 +186,7 @@ func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		log.Printf("Failed to read form file from request: %v", err)
 		WriteError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
@@ -193,6 +194,7 @@ func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) 
 
 	avatarBytes, err := avatar.ProcessAvatar(file)
 	if err != nil {
+		log.Printf("Failed to process avatar: %v", err)
 		WriteError(w, http.StatusBadRequest, "Invalid avatar")
 		return
 	}

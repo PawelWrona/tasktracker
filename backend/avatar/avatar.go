@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	_ "image/png"
 	"io"
 
 	stdDraw "image/draw"
