@@ -1,12 +1,14 @@
 package apiserver
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"strings"
+	"tasktracker/avatar"
 	"time"
 	"unicode/utf8"
 )
@@ -62,13 +64,25 @@ func (s *ApiServer) GetCurrentUserHandler(w http.ResponseWriter, r *http.Request
 
 	name, _, _ := strings.Cut(user.Email, "@")
 
+	var avatarUrl *string
+
+	if user.AvatarKey != nil && *user.AvatarKey != "" {
+		url, err := s.r2Storage.GetSignedUrl(r.Context(), *user.AvatarKey)
+		if err != nil {
+			WriteError(w, http.StatusInternalServerError, "Internal server error")
+			return
+		}
+
+		avatarUrl = &url
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(GetCurrentUserResponse{
 		Id:        user.Id,
 		Name:      name,
 		Email:     user.Email,
-		AvatarUrl: nil,
+		AvatarUrl: avatarUrl,
 	})
 }
 
@@ -150,6 +164,62 @@ func (s *ApiServer) ChangePasswordHandler(w http.ResponseWriter, r *http.Request
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
 	})
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *ApiServer) ChangeAvatarHandler(w http.ResponseWriter, r *http.Request) {
+	userId, ok := r.Context().Value(userIdKey).(int64)
+	if !ok {
+		WriteError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	const maxUploadBytes int64 = 2 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
+
+	file, _, err := r.FormFile("avatar")
+	if err != nil {
+		var maxErr *http.MaxBytesError
+		if errors.As(err, &maxErr) {
+			WriteError(w, http.StatusRequestEntityTooLarge, "The file is too large")
+			return
+		}
+
+		log.Printf("Failed to read form file from request: %v", err)
+		WriteError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	defer file.Close()
+
+	avatarBytes, err := avatar.ProcessAvatar(file)
+	if err != nil {
+		log.Printf("Failed to process avatar: %v", err)
+		WriteError(w, http.StatusBadRequest, "Invalid avatar")
+		return
+	}
+
+	avatarKey := avatar.GenerateAvatarKey(userId)
+
+	if err := s.r2Storage.Upload(r.Context(), avatarKey, avatarBytes); err != nil {
+		log.Printf("Failed to upload avatar to R2 storage: %v", err)
+		WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	if err := s.store.Users.ChangeAvatar(r.Context(), userId, avatarKey); err != nil {
+		log.Printf("Failed to update avatar in database: %v", err)
+
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if deleteFromStorageErr := s.r2Storage.Delete(cleanupCtx, avatarKey); deleteFromStorageErr != nil {
+			log.Printf("Failed to remove avatar from R2 storage: %v", deleteFromStorageErr)
+		}
+
+		WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }

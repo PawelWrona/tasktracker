@@ -207,3 +207,47 @@ export async function changePassword(request: changePasswordRequest): Promise<vo
         )
     }
 }
+
+export async function changeAvatar(file: File): Promise<void> {
+    const formData = new FormData()
+    formData.append("avatar", file)
+
+    const response = await authenticatedFetch("/api/users/me/change-avatar", {
+        method: "PATCH",
+        credentials: "include",
+        body: formData
+    })
+
+    if (!response.ok) {
+        let errData: unknown
+
+        try {
+            errData = await response.json()
+        } catch {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        if (!isErrorResponse(errData)) {
+            throw new ApiError(
+                response.status,
+                "Unexpected error occured"
+            )
+        }
+
+        throw new ApiError(
+            response.status,
+            errData.message,
+            errData.errors
+        )
+    }
+
+    if (response.status !== 204) {
+        throw new ApiError(
+            response.status,
+            "Unexpected response from the server"
+        )
+    }
+}

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"tasktracker/config"
+	"tasktracker/storage"
 	"tasktracker/store"
 	"time"
 )
@@ -16,13 +17,15 @@ type ApiServer struct {
 	config       *config.Config
 	store        *store.Store
 	tokenManager *tokenManager
+	r2Storage    *storage.R2Storage
 }
 
-func New(config *config.Config, store *store.Store, tokenManager *tokenManager) *ApiServer {
+func New(config *config.Config, store *store.Store, tokenManager *tokenManager, r2Storage *storage.R2Storage) *ApiServer {
 	return &ApiServer{
 		config:       config,
 		store:        store,
 		tokenManager: tokenManager,
+		r2Storage:    r2Storage,
 	}
 }
 
@@ -43,6 +46,7 @@ func (s *ApiServer) Start(ctx context.Context) error {
 	mux.Handle("GET /users", s.AuthMiddleware(http.HandlerFunc(s.ListUsersHandler)))
 	mux.Handle("GET /users/me", s.AuthMiddleware(http.HandlerFunc(s.GetCurrentUserHandler)))
 	mux.Handle("PATCH /users/me/change-password", s.AuthMiddleware(http.HandlerFunc(s.ChangePasswordHandler)))
+	mux.Handle("PATCH /users/me/change-avatar", s.AuthMiddleware(http.HandlerFunc(s.ChangeAvatarHandler)))
 
 	server := &http.Server{
 		Addr:    net.JoinHostPort(s.config.ApiServerHost, s.config.ApiServerPort),
